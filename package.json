@@ -1,6 +1,6 @@
 {
-  "name": "qxr-sbilibili-api",
-  "version": "1.0.0",
+  "name": "qxr-bilibili-api",
+  "version": "1.0.1",
   "description": "",
   "main": "index.js",
   "scripts": {

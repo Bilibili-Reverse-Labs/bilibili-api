@@ -1,6 +1,6 @@
 const { expect } = require('chai')
 const fs = require('fs')
-const BilibiliApi = require('../lib/index')
+const BilibiliApi = require('../index')
 const api = new BilibiliApi()
 
 describe('登陆验证', function () {
