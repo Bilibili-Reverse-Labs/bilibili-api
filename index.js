@@ -217,11 +217,11 @@ class BilibiliApi {
 
     /**
      * 获取视频所有评论
-     * @param {*} vedio 
+     * @param {*} video 
      * @returns 
      */
-    async getVedioAllComments(vedio) {
-        const data = await this.getVedioComments(vedio)
+    async getVideoAllComments(video) {
+        const data = await this.getVideoComments(video)
         let replies = []
 
         data.data.replies.map(r => {
@@ -235,9 +235,9 @@ class BilibiliApi {
         let isEnd = data.data.cursor.is_end
         let next = 2;
         while (!isEnd) {
-            const data = await this.getVedioComments(vedio, next)
+            const data = await this.getVideoComments(video, next)
             data.data.replies.map(r => {
-                let item = { rpid: r.rpid, uname: r.member.uname, mid: r.member.mid, level: r.member.level_info.current_level, message: r.content.message, bv: vedio.bvid, ip: r.reply_control.location, ctime: r.ctime, pictures: r.content.pictures }
+                let item = { rpid: r.rpid, uname: r.member.uname, mid: r.member.mid, level: r.member.level_info.current_level, message: r.content.message, bv: video.bvid, ip: r.reply_control.location, ctime: r.ctime, pictures: r.content.pictures }
                 item.replies = _.map(r.replies, c => {
                     return { rpid: c.rpid, uname: c.member.uname, mid: c.member.mid, level: c.member.level_info.current_level, message: c.content.message, ip: c.reply_control.location, ctime: c.ctime }
                 })
@@ -252,13 +252,13 @@ class BilibiliApi {
 
     /**
      * 获取视频单页评论
-     * @param {*} vedio 
+     * @param {*} video 
      * @param {*} next 
      * @param {*} ps 
      * @returns 
      */
-    async getVedioComments(vedio, next = 1, ps = 30) {
-        let params = addVerifyInfo(`oid=${vedio.aid}&type=1&mode=3&plat=1&web_location=1315875&next=${next}&ps=${ps}`, await getVerifyString())
+    async getVideoComments(video, next = 1, ps = 30) {
+        let params = addVerifyInfo(`oid=${video.aid}&type=1&mode=3&plat=1&web_location=1315875&next=${next}&ps=${ps}`, await getVerifyString())
         const res = await axios.request({
             url: `${this.host}/x/v2/reply/wbi/main?${params}`,
             headers: this.getHeaders()
@@ -271,12 +271,12 @@ class BilibiliApi {
 
     /**
      * 获取视频评论数
-     * @param {*} vedio 
+     * @param {*} video 
      * @returns 
      */
-    async getVedioCommentCount(vedio) {
+    async getVideoCommentCount(video) {
         const res = await axios.request({
-            url: `${this.host}/x/v2/reply/count?oid=${vedio.aid}&type=1`,
+            url: `${this.host}/x/v2/reply/count?oid=${video.aid}&type=1`,
             headers: this.getHeaders()
         })
         return res.data.data.count
@@ -284,18 +284,18 @@ class BilibiliApi {
 
     /**
      * 举报稿件新版接口
-     * @param {*} vedio 
+     * @param {*} video 
      * @param {*} desc 
      * @param {*} biliJtc 
      * @param {*} tid  3 4 10021
      * @returns 
      */
-    async appealVedioV2(vedio, desc, biliJtc, tid = 3) {
+    async appealVideoV2(video, desc, biliJtc, tid = 3) {
         const res = await axios.request({
             method: 'POST',
             url: `${this.host}/x/web-interface/appeal/v2/submit`,
             data: qs.stringify({
-                'aid': vedio.aid,
+                'aid': video.aid,
                 'block_author': 'false',
                 'csrf': biliJtc,
                 desc,
@@ -316,15 +316,15 @@ class BilibiliApi {
      * @param {*} ct 
      * @returns 
      */
-    async getAllVedios(mid, ps = 30, ct) {
+    async getAllVideos(mid, ps = 30, ct) {
         let vlist = []
-        let data = await this.getVedios(mid, 1, ps)
+        let data = await this.getVideos(mid, 1, ps)
         vlist = _.concat(vlist, data.list.vlist)
 
         let count = ct || data.page.count
         const pages = Math.floor(count / ps)
         for (let p = 2; p < pages + 1; p++) {
-            data = await this.getVedios(mid, p, ps)
+            data = await this.getVideos(mid, p, ps)
             vlist = _.concat(vlist, data.list.vlist)
         }
         return vlist
@@ -337,7 +337,7 @@ class BilibiliApi {
      * @param {*} ps 
      * @returns 
      */
-    async getVedios(mid, pn = 1, ps = 30) {
+    async getVideos(mid, pn = 1, ps = 30) {
         let params = addVerifyInfo(`mid=${mid}&pn=${pn}&ps=${ps}`, await getVerifyString())
         const res = await axios.request({
             url: `${this.host}/x/space/wbi/arc/search?${params}`,
@@ -352,12 +352,12 @@ class BilibiliApi {
 
     /**
      * 获取视频详情
-     * @param {*} vedio 
+     * @param {*} video 
      * @returns 
      */
-    async getVedioView(vedio) {
+    async getVideoView(video) {
         const res = await axios.request({
-            url: `${this.host}/x/web-interface/view?bvid=${vedio.bvid}`,
+            url: `${this.host}/x/web-interface/view?bvid=${video.bvid}`,
             headers: this.getHeaders()
         })
         if (!res || !res.data || res.data.code != 0) {
@@ -368,16 +368,16 @@ class BilibiliApi {
 
     /**
      * 获取视频下载地址
-     * @param {*} vedio 
+     * @param {*} video 
      * @param {*} qn 
      * @returns 
      */
-    async getVedioUrl(vedio, qn = 116) {
-        const view = await this.getVedioView(vedio)
+    async getVideoUrl(video, qn = 116) {
+        const view = await this.getVideoView(video)
         const pages = view.pages
         const cid = pages[0].cid
 
-        let params = addVerifyInfo(`qn=${qn}&fnver=0&fnval=4048&fourk=1&voice_balance=1&gaia_source=pre-load&bvid=${vedio.bvid}&cid=${cid}&web_location=1315873`, await getVerifyString())
+        let params = addVerifyInfo(`qn=${qn}&fnver=0&fnval=4048&fourk=1&voice_balance=1&gaia_source=pre-load&bvid=${video.bvid}&cid=${cid}&web_location=1315873`, await getVerifyString())
         const res = await axios.request({
             url: `${this.host}/x/player/wbi/playurl?${params}`,
             headers: this.getHeaders()
@@ -395,7 +395,7 @@ class BilibiliApi {
      * @param {*} path 
      * @returns 
      */
-    async downloadVedio(url, path) {
+    async downloadVideo(url, path) {
         const res = await axios.request({
             maxBodyLength: Infinity,
             url,
