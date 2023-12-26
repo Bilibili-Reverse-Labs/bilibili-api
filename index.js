@@ -395,7 +395,7 @@ class BilibiliApi {
      * @param {*} path 
      * @returns 
      */
-    async downloadVedio(title, url, path) {
+    async downloadVedio(url, path) {
         const res = await axios.request({
             maxBodyLength: Infinity,
             url,
@@ -404,7 +404,7 @@ class BilibiliApi {
         })
 
         const totalLength = res.headers['content-length']
-        console.log(`开始下载: ${title} ${(totalLength/1024/1024/1024).toFixed(2)}G`)
+        console.log(`开始下载: ${path} ${(totalLength/1024/1024/1024).toFixed(2)}G`)
         const progressBar = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic)
         progressBar.start(totalLength, 0)
 
