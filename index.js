@@ -88,7 +88,6 @@ class BilibiliApi {
             await delay(1000)
             qrCodePollRes = await this.qrCodePoll(res.data.qrcode_key)
             if (qrCodePollRes.data.code == 0 && !qrCodePollRes.data.data.code) {
-                // console.log(qrCodePollRes.data.data.message)
                 success = true
             }
             count++
@@ -377,15 +376,17 @@ class BilibiliApi {
         const view = await this.getVedioView(vedio)
         const pages = view.pages
         const cid = pages[0].cid
+
+        let params = addVerifyInfo(`qn=${qn}&fnver=0&fnval=4048&fourk=1&voice_balance=1&gaia_source=pre-load&bvid=${vedio.bvid}&cid=${cid}&web_location=1315873`, await getVerifyString())
         const res = await axios.request({
-            url: `${this.host}/x/player/wbi/playurl?bvid=${vedio.bvid}&cid=${cid}&qn=${qn}`,
+            url: `${this.host}/x/player/wbi/playurl?${params}`,
             headers: this.getHeaders()
         })
 
         if (!res || !res.data || res.data.code != 0) {
             console.log('获取视频下载链接失败:', _.get(res, 'data.code'), _.get(res, 'data.message'))
         }
-        return res.data.data.durl[0].url
+        return res.data.data.dash.video
     }
 
     /**
@@ -394,7 +395,7 @@ class BilibiliApi {
      * @param {*} path 
      * @returns 
      */
-    async downloadVedio(url, path) {
+    async downloadVedio(title, url, path) {
         const res = await axios.request({
             maxBodyLength: Infinity,
             url,
@@ -403,6 +404,7 @@ class BilibiliApi {
         })
 
         const totalLength = res.headers['content-length']
+        console.log(`开始下载: ${title} ${(totalLength/1024/1024/1024).toFixed(2)}G`)
         const progressBar = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic)
         progressBar.start(totalLength, 0)
 
