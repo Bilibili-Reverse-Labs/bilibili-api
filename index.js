@@ -386,7 +386,7 @@ class BilibiliApi {
         if (!res || !res.data || res.data.code != 0) {
             console.log('获取视频下载链接失败:', _.get(res, 'data.code'), _.get(res, 'data.message'))
         }
-        return res.data.data.dash.video
+        return res.data.data
     }
 
     /**
