@@ -390,6 +390,25 @@ class BilibiliApi {
     }
 
     /**
+     * 获取番剧下载地址
+     * @param {*} video 
+     * @param {*} qn 
+     * @returns 
+     */
+    async getFilmUrl(ep_id, qn = 116) {
+        const params = `support_multi_audio=true&qn=${qn}&fnver=0&fnval=4048&fourk=1&ep_id=${ep_id}`
+        const res = await axios.request({
+            url: `${this.host}/pgc/player/web/playurl?${params}`,
+            headers: this.getHeaders()
+        })
+
+        if (!res || !res.data || res.data.code != 0) {
+            console.log('获取视频下载链接失败:', _.get(res, 'data.code'), _.get(res, 'data.message'))
+        }
+        return res.data.result
+    }
+
+    /**
      * 下载视频
      * @param {*} url 
      * @param {*} path 
