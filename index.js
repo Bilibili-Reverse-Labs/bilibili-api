@@ -10,7 +10,8 @@ const { delay } = require('./util/index')
 class BilibiliApi {
     constructor(opt = {}) {
         this.host = opt.host || 'https://api.bilibili.com'
-        this.ua = opt.ua || 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36'
+        // this.ua = opt.ua || 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36'
+        this.ua = opt.ua || 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0'
         this.cookie = opt.cookie
         this.jct = ''
     }
@@ -62,7 +63,7 @@ class BilibiliApi {
             'referer': 'https://search.bilibili.com',
             'authority': 'api.bilibili.com',
             'accept': 'application/json, text/plain, */*',
-            'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6',
+            'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6'
         }
     }
 
@@ -322,7 +323,7 @@ class BilibiliApi {
         vlist = _.concat(vlist, data.list.vlist)
 
         let count = ct || data.page.count
-        const pages = Math.floor(count / ps)
+        const pages = Math.ceil(count / ps)
         for (let p = 2; p < pages + 1; p++) {
             data = await this.getVideos(mid, p, ps)
             vlist = _.concat(vlist, data.list.vlist)
@@ -362,6 +363,23 @@ class BilibiliApi {
         })
         if (!res || !res.data || res.data.code != 0) {
             console.log('获取视频详情失败:', _.get(res, 'data.code'), _.get(res, 'data.message'))
+        }
+        return res.data.data
+    }
+
+    /**
+    * 获取充电详情
+    * @param {*} video 
+    * @returns 
+    */
+    async getUpElecMonth(mid) {
+        let params = addVerifyInfo(`up_mid=${mid}`, await getVerifyString())
+        const res = await axios.request({
+            url: `${this.host}/x/ugcpay-rank/elec/month/up?${params}`,
+            headers: this.getHeaders()
+        })
+        if (!res || !res.data || res.data.code != 0) {
+            console.log('获取充电详情失败:', _.get(res, 'data.code'), _.get(res, 'data.message'))
         }
         return res.data.data
     }
@@ -423,7 +441,7 @@ class BilibiliApi {
         })
 
         const totalLength = res.headers['content-length']
-        console.log(`开始下载: ${path} ${(totalLength/1024/1024/1024).toFixed(2)}G`)
+        console.log(`开始下载: ${path} ${(totalLength / 1024 / 1024 / 1024).toFixed(2)}G`)
         const progressBar = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic)
         progressBar.start(totalLength, 0)
 
