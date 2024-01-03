@@ -2,17 +2,17 @@
 
 ## Base usage
 
-`sh
+```sh
 npm i qxr-bilibili-api
-`
+```
 
-`js
+```js
 const BilibiliApi = require('qxr-bilibili-api')
 const biliApi = new BilibiliApi()
 
 // qrcode login
 const loginRes = await biliApi.login()
-`
+```
 
 ## Test
 
