@@ -8,16 +8,18 @@ const qs = require('qs')
 const { delay } = require('./util/index')
 
 class BilibiliApi {
-    constructor(opt = {}) {
-        this.host = opt.host || 'https://api.bilibili.com'
-        // this.ua = opt.ua || 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36'
-        this.ua = opt.ua || 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0'
-        this.cookie = opt.cookie
-        this.jct = ''
+    /**
+     * @param {host, userAgent, cookie} opt 指定参数
+     */
+    constructor(option = {}) {
+        this.host = option.host || 'https://api.bilibili.com'
+        // this.userAgent = opt.userAgent || 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36'
+        this.userAgent = option.userAgent || 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0'
+        this.setCookie(option.cookie || '')
     }
 
     /**
-     * 用户登录
+     * 用户登录 暂时只支持扫码登录
      * @param {*} cookiePath 
      */
     async login(cookiePath = 'cache/cookie') {
@@ -34,15 +36,52 @@ class BilibiliApi {
         this.setCookie(cookie)
 
         const userNav = await this.getUserNav()
-        if (!userNav.data.isLogin) {
+        if (!userNav.isLogin) {
             console.log('登陆失效，请重新扫码登陆')
 
             cookie = await this.qrCodeLogin()
             await fs.writeFileSync(cookiePath, cookie)
         }
+        this.setCurMid(userNav.mid)
         return true
     }
 
+    getHeaders() {
+        return {
+            'cookie': this.cookie,
+            'user-agent': this.userAgent,
+            'origin': 'https://search.bilibili.com',
+            'referer': 'https://search.bilibili.com',
+            'authority': 'api.bilibili.com',
+            'accept': 'application/json, text/plain, */*',
+            'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6'
+        }
+    }
+
+    setCookie(cookie) {
+        this.cookie = cookie
+        this.setJct(cookie)
+    }
+
+    setJct (cookie) {
+        const cookies = cookie.split(';')
+        for (const cookie of cookies) {
+            if (cookie.includes('Securebili_jct')) {
+                const match = cookie.match(/Securebili_jct=([^;]*)/)
+                this.jct = match ? match[1] : null
+                break
+            }
+        }
+    }
+
+    setCurMid(mid) {
+        this.mid = mid
+    }
+
+    /**
+     * 获取当前用户导航栏信息
+     * @returns 
+     */
     async getUserNav() {
         const res = await axios.request({
             url: `https://api.bilibili.com/x/web-interface/nav`,
@@ -52,24 +91,7 @@ class BilibiliApi {
             console.log('获取用户导航栏信息失败:', _.get(res, 'data.code'), _.get(res, 'data.message'))
         }
 
-        return res.data
-    }
-
-    getHeaders() {
-        return {
-            'cookie': this.cookie,
-            'user-agent': this.ua,
-            'origin': 'https://search.bilibili.com',
-            'referer': 'https://search.bilibili.com',
-            'authority': 'api.bilibili.com',
-            'accept': 'application/json, text/plain, */*',
-            'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6'
-        }
-    }
-
-    async setCookie(cookie) {
-        this.cookie = cookie
-        this.jct = ''
+        return res.data.data
     }
 
     /**
@@ -101,25 +123,10 @@ class BilibiliApi {
         return null
     }
 
-    async vipScoreTask() {
-        const res = await axios.request({
-            method: 'post',
-            // url: `https://api.bilibili.com/pgc/activity/score/task/sign`,
-            url: `${this.host}/x/vip/privilege/receive`,
-            data: { type: 1 },
-            headers: this.getHeaders()
-        })
-        if (!res || !res.data || res.data.code != 0) {
-            console.log('大会员签到失败:', _.get(res, 'data.code'), _.get(res, 'data.message'))
-        }
-
-        return res.data
-    }
-
     /**
-     * 生成登录二维码
-     * @returns 
-     */
+    * 生成登录二维码
+    * @returns 
+    */
     async qrCodeGenatator() {
         const res = await axios.request({
             url: `https://passport.bilibili.com/x/passport-login/web/qrcode/generate`
@@ -146,13 +153,19 @@ class BilibiliApi {
         return res
     }
 
-    async vipSign() {
+    /**
+     * 大会员签到
+     * @returns { code, message }
+     */
+    async vipScoreTask() {
         const res = await axios.request({
+            method: 'post',
             url: `${this.host}/pgc/activity/score/task/sign`,
+            data: { type: 1 },
             headers: this.getHeaders()
         })
         if (!res || !res.data || res.data.code != 0) {
-            console.log('vipSign', _.get(res, 'data.code'), _.get(res, 'data.message'))
+            console.log('大会员签到失败:', _.get(res, 'data.code'), _.get(res, 'data.message'))
         }
         return res.data
     }
@@ -160,7 +173,7 @@ class BilibiliApi {
     /**
      * 获取用户卡片信息
      * @param {String} mid 用户 id
-     * @returns 
+     * @returns { following, archive_count, follower, like_num, card{} }
      */
     async getUserCard(mid) {
         const res = await axios.request({
@@ -170,35 +183,48 @@ class BilibiliApi {
         if (!res || !res.data || res.data.code != 0) {
             console.log('获取用户卡片失败:', _.get(res, 'data.code'), _.get(res, 'data.message'))
         }
-        return res.data.data.card
+        return res.data.data
     }
 
-    async sendMessage() {
+    /**
+     * 私信
+     * @returns 
+     */
+    async sendMessage(receiver_id, content) {
         const deviceid = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (function (name) {
             let randomInt = 16 * Math.random() | 0;
             return ("x" === name ? randomInt : 3 & randomInt | 8).toString(16).toUpperCase()
         }))
-        const res = await axios.request({
-            method: 'post',
-            url: ` https://api.vc.bilibili.com/web_im/v1/web_im/send_msg`,
-            headers: this.getHeaders(),
-            data: qs.stringify({
-                'msg': {
-                    sender_uid: '',
-                    receiver_id: '',
-                    receiver_type: 1,
-                    msg_type: 1,
-                    deviceid,
-                    timestamp: Date.now(),
-                    content: '',
-                    crsf: this.biliJtc
-                },
-            }),
+        const data = qs.stringify({
+            'msg[sender_uid]': this.mid,
+            'msg[receiver_id]': receiver_id,
+            'msg[receiver_type]': '1',
+            'msg[msg_type]': '1',
+            'msg[msg_status]': '0',
+            'msg[content]': JSON.stringify({content}),
+            'msg[timestamp]': '1704303022',
+            'msg[new_face_version]': '0',
+            'msg[dev_id]': deviceid,
+            'from_firework': '0',
+            'build': '0',
+            'mobi_app': 'web',
+            'csrf_token': this.jct,
+            'csrf': this.jct
         })
-        if (!res || !res.data || res.data.code != 0) {
-            console.log('获取用户卡片失败:', _.get(res, 'data.code'), _.get(res, 'data.message'))
+        let params = addVerifyInfo(`w_sender_uid=${this.mid}&w_receiver_id=${receiver_id}&w_dev_id=${deviceid}`, await getVerifyString())
+        let config = {
+            method: 'post',
+            maxBodyLength: Infinity,
+            url: `https://api.vc.bilibili.com/web_im/v1/web_im/send_msg?${params}`,
+            headers: this.getHeaders(),
+            data : data
         }
-        return res.data.data.card
+
+        const res = await axios.request(config)
+        if (!res || !res.data || res.data.code != 0) {
+            console.log('发送信息失败:', _.get(res, 'data.code'), _.get(res, 'data.message'))
+        }
+        return res.data.data
     }
 
     /**
@@ -213,7 +239,7 @@ class BilibiliApi {
         if (!res || !res.data || res.data.code != 0) {
             console.log('获取会员信息失败:', _.get(res, 'data.code'), _.get(res, 'data.message'))
         }
-        return res.data.data.vip_status
+        return res.data.data
     }
 
     /**
@@ -223,27 +249,13 @@ class BilibiliApi {
      */
     async getVideoAllComments(video) {
         const data = await this.getVideoComments(video)
-        let replies = []
-
-        data.data.replies.map(r => {
-            let item = { rpid: r.rpid, uname: r.member.uname, mid: r.member.mid, level: r.member.level_info.current_level, message: r.content.message, ip: r.reply_control.location, ctime: r.ctime, pictures: r.content.pictures }
-            item.replies = _.map(r.replies, c => {
-                return { rpid: c.rpid, uname: c.member.uname, mid: c.member.mid, level: c.member.level_info.current_level, message: c.content.message, ip: c.reply_control.location, ctime: c.ctime }
-            })
-            replies.push(item)
-        })
+        let replies = data.data.replies
 
         let isEnd = data.data.cursor.is_end
         let next = 2;
         while (!isEnd) {
             const data = await this.getVideoComments(video, next)
-            data.data.replies.map(r => {
-                let item = { rpid: r.rpid, uname: r.member.uname, mid: r.member.mid, level: r.member.level_info.current_level, message: r.content.message, bv: video.bvid, ip: r.reply_control.location, ctime: r.ctime, pictures: r.content.pictures }
-                item.replies = _.map(r.replies, c => {
-                    return { rpid: c.rpid, uname: c.member.uname, mid: c.member.mid, level: c.member.level_info.current_level, message: c.content.message, ip: c.reply_control.location, ctime: c.ctime }
-                })
-                replies.push(item)
-            })
+            replies = _.concat(replies,  data.data.replies)
             isEnd = data.data.cursor.is_end
             next++
         }
@@ -313,8 +325,8 @@ class BilibiliApi {
     /**
      * 获取用户所有视频
      * @param {*} mid 
-     * @param {*} ps 
-     * @param {*} ct 
+     * @param {*} ps 条数 最多 30
+     * @param {*} ct 获取前几条
      * @returns 
      */
     async getAllVideos(mid, ps = 30, ct) {
@@ -353,12 +365,12 @@ class BilibiliApi {
 
     /**
      * 获取视频详情
-     * @param {*} video 
+     * @param {*} bvid 
      * @returns 
      */
-    async getVideoView(video) {
+    async getVideoView(bvid) {
         const res = await axios.request({
-            url: `${this.host}/x/web-interface/view?bvid=${video.bvid}`,
+            url: `${this.host}/x/web-interface/view?bvid=${bvid}`,
             headers: this.getHeaders()
         })
         if (!res || !res.data || res.data.code != 0) {
@@ -390,12 +402,12 @@ class BilibiliApi {
      * @param {*} qn 
      * @returns 
      */
-    async getVideoUrl(video, qn = 116) {
-        const view = await this.getVideoView(video)
+    async getVideoUrl(bvid, qn = 116) {
+        const view = await this.getVideoView(bvid)
         const pages = view.pages
         const cid = pages[0].cid
 
-        let params = addVerifyInfo(`qn=${qn}&fnver=0&fnval=4048&fourk=1&voice_balance=1&gaia_source=pre-load&bvid=${video.bvid}&cid=${cid}&web_location=1315873`, await getVerifyString())
+        let params = addVerifyInfo(`qn=${qn}&fnver=0&fnval=4048&fourk=1&voice_balance=1&gaia_source=pre-load&bvid=${view.bvid}&cid=${cid}&web_location=1315873`, await getVerifyString())
         const res = await axios.request({
             url: `${this.host}/x/player/wbi/playurl?${params}`,
             headers: this.getHeaders()
@@ -409,7 +421,7 @@ class BilibiliApi {
 
     /**
      * 获取番剧下载地址
-     * @param {*} video 
+     * @param {*} ep_id 
      * @param {*} qn 
      * @returns 
      */
