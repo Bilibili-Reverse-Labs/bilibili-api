@@ -63,7 +63,7 @@ class BilibiliApi {
         this.setJct(cookie)
     }
 
-    setJct (cookie) {
+    setJct(cookie) {
         const cookies = cookie.split(';')
         for (const cookie of cookies) {
             if (cookie.includes('Securebili_jct')) {
@@ -201,7 +201,7 @@ class BilibiliApi {
             'msg[receiver_type]': '1',
             'msg[msg_type]': '1',
             'msg[msg_status]': '0',
-            'msg[content]': JSON.stringify({content}),
+            'msg[content]': JSON.stringify({ content }),
             'msg[timestamp]': '1704303022',
             'msg[new_face_version]': '0',
             'msg[dev_id]': deviceid,
@@ -217,7 +217,7 @@ class BilibiliApi {
             maxBodyLength: Infinity,
             url: `https://api.vc.bilibili.com/web_im/v1/web_im/send_msg?${params}`,
             headers: this.getHeaders(),
-            data : data
+            data: data
         }
 
         const res = await axios.request(config)
@@ -255,7 +255,7 @@ class BilibiliApi {
         let next = 2;
         while (!isEnd) {
             const data = await this.getVideoComments(video, next)
-            replies = _.concat(replies,  data.data.replies)
+            replies = _.concat(replies, data.data.replies)
             isEnd = data.data.cursor.is_end
             next++
         }
@@ -359,6 +359,62 @@ class BilibiliApi {
 
         if (!res || !res.data || res.data.code != 0) {
             console.log('获取视频列表失败:', pn, _.get(res, 'data.code'), _.get(res, 'data.message'))
+        }
+        return res.data.data
+    }
+
+    /**
+     * 获取用户合集
+     * @param {*} mid 目标 mid
+     * @param {*} page_num 
+     * @param {*} page_size 
+     * @returns 
+     */
+    async getUserSeriesList(mid, page_num = 1, page_size = 20) {
+        const res = await axios.request({
+            url: `${this.host}/x/polymer/web-space/seasons_series_list?mid=${mid}&page_num=${page_num}&page_size=${page_size}`,
+            headers: this.getHeaders()
+        })
+
+        if (!res || !res.data || res.data.code != 0) {
+            console.log('获取收藏夹列表失败:', _.get(res, 'data.code'), _.get(res, 'data.message'))
+        }
+        return res.data.data
+    }
+
+    /**
+     * 获取指定用户创建的所有收藏夹信息
+     * @param {*} up_mid 目标用户 mid
+     * @param {*} type 目标内容属性 默认全部 0：全部 2：视频稿件
+     * @returns 
+     */
+    async getUserFavFolders(up_mid, type = 0) {
+        const res = await axios.request({
+            url: `${this.host}/x/v3/fav/folder/created/list-all?up_mid=${up_mid}&type=${type}`,
+            headers: this.getHeaders()
+        })
+
+        if (!res || !res.data || res.data.code != 0) {
+            console.log('获取收藏夹列表失败:', _.get(res, 'data.code'), _.get(res, 'data.message'))
+        }
+        return res.data.data
+    }
+
+    /**
+     * 获取指定收藏夹视频列表
+     * @param {*} media_id 收藏夹 id
+     * @param {*} pn 
+     * @param {*} ps 
+     * @returns 
+     */
+    async getUserFavResources(media_id, pn = 1, ps = 20) {
+        const res = await axios.request({
+            url: `${this.host}/x/v3/fav/resource/list?media_id=${media_id}&pn=${pn}&ps=${ps}`,
+            headers: this.getHeaders()
+        })
+
+        if (!res || !res.data || res.data.code != 0) {
+            console.log('获取收藏夹视频列表失败:', _.get(res, 'data.code'), _.get(res, 'data.message'))
         }
         return res.data.data
     }

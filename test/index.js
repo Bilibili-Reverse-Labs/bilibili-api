@@ -59,6 +59,18 @@ describe('', function () {
         expect(res.list.vlist.length).to.be.equal(30)
     })
 
+    it('Success # getUserFavFolders', async function () {
+        let res = await api.getUserFavFolders(api.mid)
+        expect(res.list).to.be.not.equal(0)
+        res = await api.getUserFavResources(res.list[6].id)
+        expect(res.medias.length).to.be.not.equal(0)
+    })
+
+    it('Success # getUserSeriesList', async function () {
+        let res = await api.getUserSeriesList(api.mid)
+        expect(res.items_lists.seasons_list.length).to.be.equal(0)
+    })
+
     it('Success # getVideoView', async function () {
         let res = await api.getVideoView('BV1Yp4y1R7aQ')
         expect(res.bvid).to.be.equal('BV1Yp4y1R7aQ')
