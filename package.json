@@ -3,6 +3,8 @@
   "version": "1.0.11",
   "description": "",
   "main": "index.js",
+  "repository": "https://github.com/Bilibili-Reverse-Labs/bilibili-api",
+  "homepage": "https://github.com/Bilibili-Reverse-Labs/bilibili-api",
   "scripts": {
     "test": "npx mocha test/*.js  --timeout 30000"
   },
