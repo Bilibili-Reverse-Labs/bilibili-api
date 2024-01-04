@@ -11,7 +11,7 @@ describe('', function () {
     })
 
     after(async function () {
-        // await fs.unlinkSync('test/cookie')
+        await fs.unlinkSync('test/cookie')
     })
 
     it('Success # getUserNav', async function () {

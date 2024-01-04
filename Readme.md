@@ -1,16 +1,20 @@
-## [Github page](https://github.com/Bilibili-Reverse-Labs/bilibili-api)
+
+
+[Github page](https://github.com/Bilibili-Reverse-Labs/bilibili-api)
 
 ## Base usage
+
+- 安装
 
 ```sh
 npm i qxr-bilibili-api
 ```
 
+- 扫码登录
+
 ```js
 const BilibiliApi = require('qxr-bilibili-api')
 const biliApi = new BilibiliApi()
-
-// qrcode login
 const loginRes = await biliApi.login()
 ```
 
@@ -20,9 +24,9 @@ const loginRes = await biliApi.login()
 
 ## Feature
 
-见 index.js 文件
+见 `index.js` 文件
 
 ## Thanks To
 
-- https://github.com/SocialSisterYi/bilibili-API-collect
-- https://github.com/DIYgod/RSSHub
+- 接口文档: [bilibili-API-collect](https://github.com/SocialSisterYi/bilibili-API-collect)
+- Wbi 核心算法: [RSSHub](https://github.com/DIYgod/RSSHub)
