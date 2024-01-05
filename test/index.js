@@ -4,7 +4,6 @@ const BilibiliApi = require('../index')
 const api = new BilibiliApi()
 
 describe('', function () {
-
     before(async function () {
         const res = await api.login('test/cookie')
         expect(res).to.be.equal(true)
@@ -40,12 +39,12 @@ describe('', function () {
     })
 
     it.skip('Success # getVideoAllComments', async function () {
-        let res = await api.getVideoAllComments({ aid: '325070392' })
+        let res = await api.getVideoAllComments('325070392')
         expect(res.length).to.be.not.equal(0)
     })
 
     it('Success # getVideoCommentCount', async function () {
-        let res = await api.getVideoCommentCount({ aid: '325070392' })
+        let res = await api.getVideoCommentCount('325070392')
         expect(res).to.be.not.equal(0)
     })
 
@@ -62,7 +61,7 @@ describe('', function () {
     it('Success # getUserFavFolders', async function () {
         let res = await api.getUserFavFolders(api.mid)
         expect(res.list).to.be.not.equal(0)
-        res = await api.getUserFavResources(res.list[6].id)
+        res = await api.getUserFavResources(res.list[0].id)
         expect(res.medias.length).to.be.not.equal(0)
     })
 

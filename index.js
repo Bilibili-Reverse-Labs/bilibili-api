@@ -10,6 +10,7 @@ const { delay } = require('./util/index')
 class BilibiliApi {
     /**
      * @param {host, userAgent, cookie} opt 指定参数
+     * @constructor
      */
     constructor(option = {}) {
         this.host = option.host || 'https://api.bilibili.com'
@@ -20,9 +21,9 @@ class BilibiliApi {
 
     /**
      * 用户登录 暂时只支持扫码登录
-     * @param {*} cookiePath 
+     * @param {string} cookiePath 
      */
-    async login(cookiePath = 'cache/cookie') {
+    async login(cookiePath = 'cookie.txt') {
         let cookie
 
         if (fs.existsSync(cookiePath)) {
@@ -84,11 +85,12 @@ class BilibiliApi {
      */
     async getUserNav() {
         const res = await axios.request({
-            url: `https://api.bilibili.com/x/web-interface/nav`,
+            url: `${this.host}/x/web-interface/nav`,
             headers: this.getHeaders()
         })
         if (!res || !res.data || res.data.code != 0) {
             console.log('获取用户导航栏信息失败:', _.get(res, 'data.code'), _.get(res, 'data.message'))
+            throw new Error('获取用户导航栏信息失败')
         }
 
         return res.data.data
@@ -149,6 +151,7 @@ class BilibiliApi {
         })
         if (!res || !res.data || res.data.code != 0) {
             console.log('扫码登陆失败:', _.get(res, 'data.code'), _.get(res, 'data.message'))
+            throw new Error('扫码登陆失败')
         }
         return res
     }
@@ -166,13 +169,14 @@ class BilibiliApi {
         })
         if (!res || !res.data || res.data.code != 0) {
             console.log('大会员签到失败:', _.get(res, 'data.code'), _.get(res, 'data.message'))
+            throw new Error('大会员签到失败')
         }
         return res.data
     }
 
     /**
      * 获取用户卡片信息
-     * @param {String} mid 用户 id
+     * @param {string} mid 用户 id
      * @returns { following, archive_count, follower, like_num, card{} }
      */
     async getUserCard(mid) {
@@ -182,6 +186,7 @@ class BilibiliApi {
         })
         if (!res || !res.data || res.data.code != 0) {
             console.log('获取用户卡片失败:', _.get(res, 'data.code'), _.get(res, 'data.message'))
+            throw new Error('获取用户卡片失败')
         }
         return res.data.data
     }
@@ -223,6 +228,7 @@ class BilibiliApi {
         const res = await axios.request(config)
         if (!res || !res.data || res.data.code != 0) {
             console.log('发送信息失败:', _.get(res, 'data.code'), _.get(res, 'data.message'))
+            throw new Error('发送信息失败')
         }
         return res.data.data
     }
@@ -238,23 +244,24 @@ class BilibiliApi {
         })
         if (!res || !res.data || res.data.code != 0) {
             console.log('获取会员信息失败:', _.get(res, 'data.code'), _.get(res, 'data.message'))
+            throw new Error('获取会员信息失败')
         }
         return res.data.data
     }
 
     /**
      * 获取视频所有评论
-     * @param {*} video 
+     * @param {*} videoAid 
      * @returns 
      */
-    async getVideoAllComments(video) {
-        const data = await this.getVideoComments(video)
+    async getVideoAllComments(videoAid) {
+        const data = await this.getVideoComments(videoAid)
         let replies = data.data.replies
 
         let isEnd = data.data.cursor.is_end
         let next = 2;
         while (!isEnd) {
-            const data = await this.getVideoComments(video, next)
+            const data = await this.getVideoComments(videoAid, next)
             replies = _.concat(replies, data.data.replies)
             isEnd = data.data.cursor.is_end
             next++
@@ -265,31 +272,32 @@ class BilibiliApi {
 
     /**
      * 获取视频单页评论
-     * @param {*} video 
+     * @param {*} videoAid 
      * @param {*} next 
      * @param {*} ps 
      * @returns 
      */
-    async getVideoComments(video, next = 1, ps = 30) {
-        let params = addVerifyInfo(`oid=${video.aid}&type=1&mode=3&plat=1&web_location=1315875&next=${next}&ps=${ps}`, await getVerifyString())
+    async getVideoComments(videoAid, next = 1, ps = 30) {
+        let params = addVerifyInfo(`oid=${videoAid}&type=1&mode=3&plat=1&web_location=1315875&next=${next}&ps=${ps}`, await getVerifyString())
         const res = await axios.request({
             url: `${this.host}/x/v2/reply/wbi/main?${params}`,
             headers: this.getHeaders()
         })
         if (!res || !res.data || res.data.code != 0) {
             console.log('获取视频评论失败:', _.get(res, 'data.code'), _.get(res, 'data.message'))
+            throw new Error('获取视频评论失败')
         }
         return res.data
     }
 
     /**
      * 获取视频评论数
-     * @param {*} video 
+     * @param {*} videoAid 
      * @returns 
      */
-    async getVideoCommentCount(video) {
+    async getVideoCommentCount(videoAid) {
         const res = await axios.request({
-            url: `${this.host}/x/v2/reply/count?oid=${video.aid}&type=1`,
+            url: `${this.host}/x/v2/reply/count?oid=${videoAid}&type=1`,
             headers: this.getHeaders()
         })
         return res.data.data.count
@@ -297,20 +305,20 @@ class BilibiliApi {
 
     /**
      * 举报稿件新版接口
-     * @param {*} video 
+     * @param {*} videoAid 
      * @param {*} desc 
      * @param {*} biliJtc 
      * @param {*} tid  3 4 10021
      * @returns 
      */
-    async appealVideoV2(video, desc, biliJtc, tid = 3) {
+    async appealVideoV2(videoAid, desc, tid = 3) {
         const res = await axios.request({
             method: 'POST',
             url: `${this.host}/x/web-interface/appeal/v2/submit`,
             data: qs.stringify({
-                'aid': video.aid,
+                'aid': videoAid,
                 'block_author': 'false',
-                'csrf': biliJtc,
+                'csrf': this.jct,
                 desc,
                 tid
             }),
@@ -318,6 +326,7 @@ class BilibiliApi {
         })
         if (!res || !res.data || res.data.code != 0) {
             console.log('举报稿件失败:', _.get(res, 'data.code'), _.get(res, 'data.message'))
+            throw new Error('举报稿件失败')
         }
         return res.data
     }
@@ -359,6 +368,7 @@ class BilibiliApi {
 
         if (!res || !res.data || res.data.code != 0) {
             console.log('获取视频列表失败:', pn, _.get(res, 'data.code'), _.get(res, 'data.message'))
+            throw new Error('获取视频列表失败')
         }
         return res.data.data
     }
@@ -377,7 +387,8 @@ class BilibiliApi {
         })
 
         if (!res || !res.data || res.data.code != 0) {
-            console.log('获取收藏夹列表失败:', _.get(res, 'data.code'), _.get(res, 'data.message'))
+            console.log('获取用户合集失败:', _.get(res, 'data.code'), _.get(res, 'data.message'))
+            throw new Error('获取用户合集失败')
         }
         return res.data.data
     }
@@ -396,6 +407,7 @@ class BilibiliApi {
 
         if (!res || !res.data || res.data.code != 0) {
             console.log('获取收藏夹列表失败:', _.get(res, 'data.code'), _.get(res, 'data.message'))
+            throw new Error('获取收藏夹列表失败')
         }
         return res.data.data
     }
@@ -415,6 +427,7 @@ class BilibiliApi {
 
         if (!res || !res.data || res.data.code != 0) {
             console.log('获取收藏夹视频列表失败:', _.get(res, 'data.code'), _.get(res, 'data.message'))
+            throw new Error('获取收藏夹视频列表失败')
         }
         return res.data.data
     }
@@ -431,13 +444,14 @@ class BilibiliApi {
         })
         if (!res || !res.data || res.data.code != 0) {
             console.log('获取视频详情失败:', _.get(res, 'data.code'), _.get(res, 'data.message'))
+            throw new Error('获取视频详情失败')
         }
         return res.data.data
     }
 
     /**
     * 获取充电详情
-    * @param {*} video 
+    * @param {*} mid 
     * @returns 
     */
     async getUpElecMonth(mid) {
@@ -448,13 +462,14 @@ class BilibiliApi {
         })
         if (!res || !res.data || res.data.code != 0) {
             console.log('获取充电详情失败:', _.get(res, 'data.code'), _.get(res, 'data.message'))
+            throw new Error('获取充电详情失败')
         }
         return res.data.data
     }
 
     /**
      * 获取视频下载地址
-     * @param {*} video 
+     * @param {*} bvid 
      * @param {*} qn 
      * @returns 
      */
@@ -471,6 +486,7 @@ class BilibiliApi {
 
         if (!res || !res.data || res.data.code != 0) {
             console.log('获取视频下载链接失败:', _.get(res, 'data.code'), _.get(res, 'data.message'))
+            throw new Error('获取视频下载链接失败')
         }
         return res.data.data
     }
@@ -489,7 +505,8 @@ class BilibiliApi {
         })
 
         if (!res || !res.data || res.data.code != 0) {
-            console.log('获取视频下载链接失败:', _.get(res, 'data.code'), _.get(res, 'data.message'))
+            console.log('获取番剧下载链接失败:', _.get(res, 'data.code'), _.get(res, 'data.message'))
+            throw new Error('获取番剧下载链接失败')
         }
         return res.data.result
     }
