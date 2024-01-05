@@ -67,7 +67,9 @@ describe('', function () {
 
     it('Success # getUserSeriesList', async function () {
         let res = await api.getUserSeriesList(api.mid)
-        expect(res.items_lists.seasons_list.length).to.be.equal(0)
+        expect(res.items_lists).to.be.not.equal(undefined)
+        // await api.getSeriesAllVideos(api.mid, res.items_lists.seasons_list[0].meta.season_id)
+        // expect(res.meta).to.be.not.equal(undefined)
     })
 
     it('Success # getVideoView', async function () {

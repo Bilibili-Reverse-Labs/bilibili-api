@@ -394,6 +394,52 @@ class BilibiliApi {
     }
 
     /**
+     * 获取合集分页视频列表
+     * @param {string} mid 
+     * @param {string} season_id 
+     * @param {number} pn 
+     * @param {number} ps 
+     * @param {boolean} sort_reverse 
+     * @returns 
+     */
+    async getSeriesVideos(mid, season_id, pn = 1, ps = 30, sort_reverse = false) {
+        const params = `mid=${mid}&season_id=${season_id}&sort_reverse=${sort_reverse}&page_num=${pn}&page_size=${ps}`
+        let config = {
+            url: `${this.host}/x/polymer/web-space/seasons_archives_list?${params}`,
+            headers: this.getHeaders()
+        }
+        const res = await axios.request(config)
+
+        if (!res || !res.data || res.data.code != 0) {
+            console.log('获取合集分页视频列表失败:', _.get(res, 'data.code'), _.get(res, 'data.message'))
+            throw new Error('获取合集分页视频列表失败')
+        }
+        return res.data.data
+    }
+
+    /**
+     * 获取合集所有视频
+     * @param {string} mid 
+     * @param {string} season_id 
+     * @param {number} ps 
+     * @param {number} ct 
+     * @returns 
+     */
+    async getSeriesAllVideos(mid, season_id, ps = 30, ct) {
+        let vlist = []
+        let data = await this.getSeriesVideos(mid, season_id, 1, ps)
+        vlist = _.concat(vlist, data.archives)
+
+        let count = ct || data.page.total
+        const pages = Math.ceil(count / ps)
+        for (let pn = 2; pn < pages + 1; pn++) {
+            data = await this.getSeriesVideos(mid, season_id, pn, ps)
+            vlist = _.concat(vlist, data.archives)
+        }
+        return vlist
+    }
+
+    /**
      * 获取指定用户创建的所有收藏夹信息
      * @param {*} up_mid 目标用户 mid
      * @param {*} type 目标内容属性 默认全部 0：全部 2：视频稿件

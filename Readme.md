@@ -4,8 +4,6 @@
 
 当前版本不稳定， 2.0 后为稳定版本。
 
----
-
 ## 快速开始
 
 ```javascript
@@ -14,8 +12,6 @@ const BilibiliApi = require('qxr-bilibili-api')
 const biliApi = new BilibiliApi()
 const loginRes = await biliApi.login('./cookie.txt')
 ```
-
----
 
 ## 开发计划
 
@@ -73,8 +69,10 @@ const loginRes = await biliApi.login('./cookie.txt')
   - [ ] [收藏夹操作](https://socialsisteryi.github.io/bilibili-API-collect/docs/fav/action.md)
 - web端组件
   - [ ] [分区当日投稿数](https://socialsisteryi.github.io/bilibili-API-collect/docs/web_widget/zone_upload.md)
-
----
+- 视频合集
+  - [x] 获取用户合集 `getUserSeriesList(mid, page_num = 1, page_size = 20)`
+  - [x] 获取合集分页视频列表 `getSeriesVideos(mid, season_id, pn = 1, ps = 30, sort_reverse = false)`
+  - [x] 获取合集所有视频 `getSeriesAllVideos(mid, season_id, ps = 30, ct)`
 
 ## 更新日志
 
