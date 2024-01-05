@@ -40,6 +40,8 @@ const loginRes = await biliApi.login('./cookie.txt')
   - [ ] [视频分区一览 (分区代码)](https://socialsisteryi.github.io/bilibili-API-collect/docs/video/video_zone.md)
   - [ ] [状态数](https://socialsisteryi.github.io/bilibili-API-collect/docs/video/status_number.md)
   - [ ] [点赞 & 投币 & 收藏 & 分享](https://socialsisteryi.github.io/bilibili-API-collect/docs/video/action.md)
+    - [x] 点赞 `likeVideo(bvid, like = 1)`
+    - [x] 投币 `addCoinVideo(bvid, multiply = 1, select_like = 0)`
   - [x] [播放&下载地址 (视频流)](https://socialsisteryi.github.io/bilibili-API-collect/docs/video/videostream_url.md) `getVideoUrl(bvid, qn = 116)`
   - [x] [稿件投诉](https://socialsisteryi.github.io/bilibili-API-collect/docs/video/appeal.md) `appealVideoV2(videoAid, desc, tid = 3)`
 - 剧集 (番剧、影视)

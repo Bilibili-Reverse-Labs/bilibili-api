@@ -77,6 +77,16 @@ describe('', function () {
         expect(res.bvid).to.be.equal('BV1Yp4y1R7aQ')
     })
 
+    it.skip('Success # likeVideo', async function () {
+        let res = await api.likeVideo('BV1Yp4y1R7aQ')
+        expect(res.code).to.be.equal(0)
+    })
+
+    it.skip('Success # addCoinVideo', async function () {
+        let res = await api.addCoinVideo('BV1Yp4y1R7aQ')
+        expect(res.code).to.be.equal(0)
+    })
+
     it('Success # getVideoUrl', async function () {
         let res = await api.getVideoUrl('BV1Yp4y1R7aQ')
         expect(res.dash.video[0].base_url).to.be.not.equal('')

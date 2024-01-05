@@ -496,6 +496,56 @@ class BilibiliApi {
     }
 
     /**
+     * 点赞视频
+     * @param {string} bvid 
+     * @param {number} like 1:点赞 / 2:取消
+     * @returns 
+     */
+    async likeVideo(bvid, like = 1) {
+        const res = await axios.request({
+            method: 'POST',
+            url: `${this.host}/x/web-interface/archive/like`,
+            headers: this.getHeaders(),
+            data: qs.stringify({
+                bvid,
+                like,
+                'csrf': this.jct,
+            })
+        })
+        if (!res || !res.data || res.data.code != 0) {
+            console.log('点赞视频失败:', _.get(res, 'data.code'), _.get(res, 'data.message'))
+            throw new Error('点赞视频失败')
+        }
+        return res.data
+    }
+
+    /**
+     * 投币视频
+     * @param {string} bvid 
+     * @param {number} multiply 投币数 上限2
+     * @param {number} select_like 0：不点赞 / 1：同时点赞
+     * @returns 
+     */
+    async addCoinVideo(bvid, multiply = 1, select_like = 0) {
+        const res = await axios.request({
+            method: 'POST',
+            url: `${this.host}/x/web-interface/coin/add`,
+            headers: this.getHeaders(),
+            data: qs.stringify({
+                bvid,
+                multiply,
+                select_like,
+                'csrf': this.jct,
+            })
+        })
+        if (!res || !res.data || res.data.code != 0) {
+            console.log('点赞视频失败:', _.get(res, 'data.code'), _.get(res, 'data.message'))
+            throw new Error('点赞视频失败')
+        }
+        return res.data
+    }
+
+    /**
     * 获取充电详情
     * @param {*} mid 
     * @returns 
