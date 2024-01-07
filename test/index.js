@@ -58,11 +58,18 @@ describe('', function () {
         expect(res.list.vlist.length).to.be.equal(30)
     })
 
-    it('Success # getUserFavFolders', async function () {
+    it('Success # getUserFavResources', async function () {
         let res = await api.getUserFavFolders(api.mid)
         expect(res.list).to.be.not.equal(0)
         res = await api.getUserFavResources(res.list[0].id)
         expect(res.medias.length).to.be.not.equal(0)
+    })
+
+    it('Success # getFavAllResources', async function () {
+        let res = await api.getUserFavFolders(api.mid)
+        expect(res.list).to.be.not.equal(0)
+        res = await api.getFavAllResources(res.list[0].id)
+        expect(res.length).to.be.not.equal(0)
     })
 
     it('Success # getUserSeriesList', async function () {

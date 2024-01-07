@@ -479,6 +479,28 @@ class BilibiliApi {
     }
 
     /**
+     * 获取收藏夹所有视频
+     * @param {string} media_id 
+     * @param {number} ps 
+     * @param {number} ct 
+     * @returns 
+     */
+    async getFavAllResources(media_id, ps = 20, ct) {
+        let medias = []
+        let data = await this.getUserFavResources(media_id, 1, ps)
+        medias = _.concat(medias, data.medias)
+
+        let count = ct || data.info.media_count
+        const pages = Math.ceil(count / ps)
+
+        for (let pn = 2; pn < pages + 1; pn++) {
+            data = await this.getUserFavResources(media_id, pn, ps)
+            medias = _.concat(medias, data.medias)
+        }
+        return medias
+    }
+
+    /**
      * 获取视频详情
      * @param {*} bvid 
      * @returns 
