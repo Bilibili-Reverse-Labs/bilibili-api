@@ -394,6 +394,36 @@ class BilibiliApi {
     }
 
     /**
+     * 发送评论
+     * @param {*} aid 视频 aid
+     * @param {*} message 内容
+     * @param {*} type 评论区类型代码
+     * @param {*} root 二级评论以上使用
+     * @param {*} parent 二级评论同根评论id 大于二级评论为要回复的评论id
+     * @returns 
+     */
+    async addVideoComment (aid, message, type = 1, root, parent) {
+        const data = {
+            oid: aid,
+            type,
+            message,
+            'csrf': this.jct
+        }
+        if (root) data.root = root
+        if (parent) data.parent = parent
+        const res = await axios.request({
+            method: 'POST',
+            url: `${this.host}/x/v2/reply/add`,
+            headers: this.getHeaders(),
+            data: qs.stringify(data)
+        })
+        if (!res || !res.data || res.data.code != 0) {
+            console.log('发送评论失败:', _.get(res, 'data.code'), _.get(res, 'data.message'))
+            throw new Error('发送评论失败')
+        }
+        return res.data.data
+    }
+    /**
      * 获取合集分页视频列表
      * @param {string} mid 
      * @param {string} season_id 

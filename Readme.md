@@ -55,6 +55,7 @@ const loginRes = await biliApi.login('./cookie.txt')
   - [x] [获取评论区评论总数](https://socialsisteryi.github.io/bilibili-API-collect/docs/comment/list.html#%E8%8E%B7%E5%8F%96%E8%AF%84%E8%AE%BA%E5%8C%BA%E8%AF%84%E8%AE%BA%E6%80%BB%E6%95%B0) `getVideoCommentCount(videoAid)`
   - [x] [评论区明细-懒加载](https://socialsisteryi.github.io/bilibili-API-collect/docs/comment/list.html#%E8%8E%B7%E5%8F%96%E8%AF%84%E8%AE%BA%E5%8C%BA%E6%98%8E%E7%BB%86-%E6%87%92%E5%8A%A0%E8%BD%BD) `getVideoComments(videoAid, next = 1, ps = 30)`
   - [ ] [操作](https://socialsisteryi.github.io/bilibili-API-collect/docs/comment/action.md)
+  - [x] [发表评论](https://socialsisteryi.github.io/bilibili-API-collect/docs/comment/action.html#%E5%8F%91%E8%A1%A8%E8%AF%84%E8%AE%BA) `addVideoComment (aid, message, type = 1, root, parent)`
   - [ ] [表情及表情包信息](https://socialsisteryi.github.io/bilibili-API-collect/docs/emoji/list.md)
 - 创作中心
   - [ ] [统计与数据](https://socialsisteryi.github.io/bilibili-API-collect/docs/creativecenter/statistics&data.md)

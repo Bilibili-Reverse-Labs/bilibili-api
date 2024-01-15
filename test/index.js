@@ -53,6 +53,18 @@ describe('', function () {
         expect(res.length).to.be.equal(30)
     })
 
+    it.skip('Success # addVideoComment', async function () {
+        let res = await api.getAllVideos(api.mid, 30, 1)
+        expect(res.length).to.be.equal(30)
+
+        let aid = res[0].aid
+        res = await api.addVideoComment(aid, '测试测试')
+        expect(res.rpid).to.be.not.equal(undefined)
+        
+        // res = await api.addVideoComment(aid, '测试2', 1, res.rpid, res.rpid)
+        // expect(res.rpid).to.be.not.equal(undefined)
+    })
+
     it('Success # getVideos', async function () {
         let res = await api.getVideos('1462401621')
         expect(res.list.vlist.length).to.be.equal(30)
