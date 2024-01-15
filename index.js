@@ -257,6 +257,7 @@ class BilibiliApi {
     async getVideoAllComments(videoAid) {
         const data = await this.getVideoComments(videoAid)
         let replies = data.data.replies
+        replies = _.concat(replies, data.data.top_replies || [])
 
         let isEnd = data.data.cursor.is_end
         let next = 2;
