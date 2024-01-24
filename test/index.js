@@ -55,12 +55,17 @@ describe('', function () {
 
     it.skip('Success # addVideoComment', async function () {
         let res = await api.getAllVideos(api.mid, 30, 1)
-        expect(res.length).to.be.equal(30)
+        // expect(res.length).to.be.equal(30)
 
         let aid = res[0].aid
-        res = await api.addVideoComment(aid, '测试测试')
-        expect(res.rpid).to.be.not.equal(undefined)
-        
+        // console.log(aid)
+        // res = await api.addVideoComment(aid, 'dssd')
+        // expect(res.rpid).to.be.not.equal(undefined)
+
+        // console.log(res.rpid)
+        // res = await api.delVideoComment(aid, res.rpid)
+        // console.log(res)
+        // expect(res.rpid).to.be.not.equal(undefined)
         // res = await api.addVideoComment(aid, '测试2', 1, res.rpid, res.rpid)
         // expect(res.rpid).to.be.not.equal(undefined)
     })

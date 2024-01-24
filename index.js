@@ -403,7 +403,7 @@ class BilibiliApi {
      * @param {*} parent 二级评论同根评论id 大于二级评论为要回复的评论id
      * @returns 
      */
-    async addVideoComment (aid, message, type = 1, root, parent) {
+    async addVideoComment(aid, message, type = 1, root, parent) {
         const data = {
             oid: aid,
             type,
@@ -424,6 +424,33 @@ class BilibiliApi {
         }
         return res.data.data
     }
+
+    /**
+     * 
+     * @param {*} aid 
+     * @param {*} rpid 评论id
+     * @param {*} type 
+     * @returns 
+     */
+    async delVideoComment(aid, rpid, type = '1') {
+        const data = {
+            'oid': String(aid),
+            'rpid': String(rpid),
+            'type': type,
+        }
+        const res = await axios.request({
+            method: 'POST',
+            url: `${this.host}/x/v2/reply/del?csrf=${this.jct}`,
+            headers: this.getHeaders(),
+            data: qs.stringify(data)
+        })
+        if (!res || !res.data || res.data.code != 0) {
+            console.log('删除评论失败:', _.get(res, 'data.code'), _.get(res, 'data.message'))
+            throw new Error('删除评论失败')
+        }
+        return res.data
+    }
+
     /**
      * 获取合集分页视频列表
      * @param {string} mid 
