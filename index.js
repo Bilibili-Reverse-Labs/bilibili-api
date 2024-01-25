@@ -394,6 +394,45 @@ class BilibiliApi {
         return res.data.data
     }
 
+    
+    /**
+     * 获取用户关注列表 单页
+     * @param {*} vmid 
+     * @param {*} pn 
+     * @param {*} ps 
+     * @returns 
+     */
+    async getFollows(vmid, pn = 1, ps = 50) {
+        const res = await axios.request({
+            url: `${this.host}/x/relation/followings?vmid=${vmid}&ps=${ps}&pn=${pn}`,
+            headers: this.getHeaders(),
+        })
+        if (!res || !res.data || res.data.code != 0) {
+            console.log('获取关注失败:', _.get(res, 'data.code'), _.get(res, 'data.message'))
+            throw new Error('获取关注失败')
+        }
+        return res.data.data
+    }
+
+    /**
+     * 获取用户所有可见关注
+     * @param {*} vmid 
+     * @returns 
+     */
+    async getAllFollows (vmid) {
+        let list = []
+        let data = await this.getFollows(vmid, 1)
+        list = _.concat(list, data.list)
+
+        let count = data.total
+        const pages = Math.ceil(count / 50)
+        for (let p = 2; p < pages + 1; p++) {
+            data = await this.getFollows(vmid, p)
+            list = _.concat(list, data.list)
+        }
+        return list
+    }
+
     /**
      * 发送评论
      * @param {*} aid 视频 aid

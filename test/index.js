@@ -10,7 +10,7 @@ describe('', function () {
     })
 
     after(async function () {
-        await fs.unlinkSync('test/cookie')
+        // await fs.unlinkSync('test/cookie')
     })
 
     it('Success # getUserNav', async function () {
@@ -119,5 +119,10 @@ describe('', function () {
     it('Success # getFilmUrl', async function () {
         let res = await api.getFilmUrl('733691')
         expect(res.dash.video[0].base_url).to.be.not.equal('')
+    })
+
+    it('Success # getAllFollows', async function () {
+        let res = await api.getAllFollows(1462401621)
+        expect(res.length).to.be.not.equal(0)
     })
 })
