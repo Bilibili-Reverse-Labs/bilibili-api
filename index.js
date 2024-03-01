@@ -79,6 +79,20 @@ class BilibiliApi {
         this.mid = mid
     }
 
+    async getMessages (talkerId = 844424930131966) {
+        let config = {
+            url: `https://api.vc.bilibili.com/svr_sync/v1/svr_sync/fetch_session_msgs?talker_id=${talkerId}&session_type=1`,
+            headers: this.getHeaders(),
+        }
+
+        const res = await axios.request(config)
+        if (!res || !res.data || res.data.code != 0) {
+            console.log('获取消息失败:', _.get(res, 'data.code'), _.get(res, 'data.message'))
+            throw new Error('获取消息失败')
+        }
+        return res.data.data
+    }
+
     /**
      * 获取当前用户导航栏信息
      * @returns 
@@ -95,6 +109,21 @@ class BilibiliApi {
 
         return res.data.data
     }
+
+    /**
+     * @returns 
+     */
+        async getStat() {
+            const res = await axios.request({
+                url: `${this.host}/x/relation/stat?vmid=1727750599`,
+                headers: this.getHeaders()
+            })
+            if (!res || !res.data || res.data.code != 0) {
+                console.log('失败:', _.get(res, 'data.code'), _.get(res, 'data.message'))
+                throw new Error('失败')
+            }
+            return res.data.data
+        }
 
     /**
      * 二维码登录
@@ -229,20 +258,6 @@ class BilibiliApi {
         if (!res || !res.data || res.data.code != 0) {
             console.log('发送信息失败:', _.get(res, 'data.code'), _.get(res, 'data.message'))
             throw new Error('发送信息失败')
-        }
-        return res.data.data
-    }
-
-    async getMessages (talkerId) {
-        let config = {
-            url: `https://api.vc.bilibili.com/svr_sync/v1/svr_sync/fetch_session_msgs?talker_id=${talkerId}&session_type=1`,
-            headers: this.getHeaders(),
-        }
-
-        const res = await axios.request(config)
-        if (!res || !res.data || res.data.code != 0) {
-            console.log('获取消息失败:', _.get(res, 'data.code'), _.get(res, 'data.message'))
-            throw new Error('获取消息失败')
         }
         return res.data.data
     }
@@ -652,6 +667,65 @@ class BilibiliApi {
         return res.data
     }
 
+    async preDelVideo(bvid) {
+        const res = await axios.request({
+            url: `https://member.bilibili.com/x/risk/archive/del?platform=web&bvid=${bvid}`,
+            headers: this.getHeaders(),
+        })
+        if (!res || !res.data || res.data.code != 0) {
+            console.log('预删除视频失败:', _.get(res, 'data.code'), _.get(res, 'data.message'))
+            throw new Error('预删除视频失败')
+        }
+        return res.data
+    }
+
+    async delVideo(aid, challenge, validate) {
+        console.log(challenge, gt)
+        const res = await axios.request({
+            method: 'POST',
+            url: `https://member.bilibili.com/x/web/archive/delete`,
+            headers: this.getHeaders(),
+            data: qs.stringify({
+                aid,
+                geetest_challenge: challenge,
+                geetest_validate: validate,
+                geetest_seccode: validate + '|jordan',
+                success: 1,
+                'csrf': this.jct,
+            })
+
+        })
+        if (!res || !res.data || res.data.code != 0) {
+            console.log('删除视频失败:', _.get(res, 'data.code'), _.get(res, 'data.message'))
+            throw new Error('删除视频失败')
+        }
+        return res.data
+    }
+
+    async getGeetest() {
+        const res = await axios.request({
+            url: `https://member.bilibili.com/x/geetest/pre?t=${new Date().getTime()}`,
+            headers: this.getHeaders(),
+        })
+        if (!res || !res.data || res.data.code != 0) {
+            console.log('获取极验验证码失败:', _.get(res, 'data.code'), _.get(res, 'data.message'))
+            throw new Error('获取极验验证码失败')
+        }
+        return res.data
+    }
+
+    async validaGeetest(gt, challenge, callback) {
+        const res = await axios.request({
+            url: `https://api.geetest.com/ajax.php?gt=${gt}&challenge=${challenge}&lang=zh-cn&pt=0&client_type=web&callback=${callback}`,
+            headers: this.getHeaders(),
+        })
+        if (!res || !res.data || res.data.code != 0) {
+            console.log('验证极验验证码失败:', _.get(res, 'data.code'), _.get(res, 'data.message'))
+            throw new Error('验证极验验证码失败')
+        }
+        return res.data
+    }
+ 
     /**
      * 投币视频
      * @param {string} bvid 
@@ -775,7 +849,6 @@ class BilibiliApi {
             writer.on('error', reject)
         })
     }
-
 }
 
 module.exports = BilibiliApi
