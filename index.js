@@ -233,6 +233,20 @@ class BilibiliApi {
         return res.data.data
     }
 
+    async getMessages (talkerId) {
+        let config = {
+            url: `https://api.vc.bilibili.com/svr_sync/v1/svr_sync/fetch_session_msgs?talker_id=${talkerId}&session_type=1`,
+            headers: this.getHeaders(),
+        }
+
+        const res = await axios.request(config)
+        if (!res || !res.data || res.data.code != 0) {
+            console.log('获取消息失败:', _.get(res, 'data.code'), _.get(res, 'data.message'))
+            throw new Error('获取消息失败')
+        }
+        return res.data.data
+    }
+
     /**
      * 查询 vip 状态
      * @returns 
@@ -761,6 +775,7 @@ class BilibiliApi {
             writer.on('error', reject)
         })
     }
+
 }
 
 module.exports = BilibiliApi
