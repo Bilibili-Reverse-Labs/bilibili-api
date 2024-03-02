@@ -672,15 +672,10 @@ class BilibiliApi {
             url: `https://member.bilibili.com/x/risk/archive/del?platform=web&bvid=${bvid}`,
             headers: this.getHeaders(),
         })
-        if (!res || !res.data || res.data.code != 0) {
-            console.log('预删除视频失败:', _.get(res, 'data.code'), _.get(res, 'data.message'))
-            throw new Error('预删除视频失败')
-        }
         return res.data
     }
 
     async delVideo(aid, challenge, validate) {
-        console.log(challenge, gt)
         const res = await axios.request({
             method: 'POST',
             url: `https://member.bilibili.com/x/web/archive/delete`,
