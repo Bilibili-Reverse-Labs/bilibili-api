@@ -672,6 +672,10 @@ class BilibiliApi {
             url: `https://member.bilibili.com/x/risk/archive/del?platform=web&bvid=${bvid}`,
             headers: this.getHeaders(),
         })
+        if (!res || !res.data || res.data.code != 0) {
+            console.log('预删除失败:', _.get(res, 'data.code'), _.get(res, 'data.message'))
+            throw new Error('预删除失败')
+        }
         return res.data
     }
 
@@ -714,10 +718,6 @@ class BilibiliApi {
             url: `https://api.geetest.com/ajax.php?gt=${gt}&challenge=${challenge}&lang=zh-cn&pt=0&client_type=web&callback=${callback}`,
             headers: this.getHeaders(),
         })
-        if (!res || !res.data || res.data.code != 0) {
-            console.log('验证极验验证码失败:', _.get(res, 'data.code'), _.get(res, 'data.message'))
-            throw new Error('验证极验验证码失败')
-        }
         return res.data
     }
  
