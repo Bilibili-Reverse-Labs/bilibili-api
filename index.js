@@ -320,6 +320,24 @@ class BilibiliApi {
         return res.data
     }
 
+    
+     /**
+     * 获取折叠评论
+     * @param {*} videoAid 
+     * @returns 
+     */
+     async getReplyReplies(videoAid, root) {
+        let params = addVerifyInfo(`oid=${videoAid}&type=1&ps=20&pn=1&&root=${root}&gaia_source=main_web`, await getVerifyString())
+        const res = await axios.request({
+            url: `${this.host}/x/v2/reply/reply?${params}`,
+            headers: this.getHeaders()
+        })
+        if (!res || !res.data || res.data.code != 0) {
+            console.log('获取折叠评论失败:', _.get(res, 'data.code'), _.get(res, 'data.message'))
+            throw new Error('获取折叠评论失败')
+        }
+        return res.data
+    }
     /**
      * 获取视频评论数
      * @param {*} videoAid 
