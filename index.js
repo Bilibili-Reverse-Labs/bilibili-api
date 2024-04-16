@@ -308,7 +308,7 @@ class BilibiliApi {
      * @returns 
      */
     async getVideoComments(videoAid, next = 1, ps = 30) {
-        let params = addVerifyInfo(`oid=${videoAid}&type=1&mode=3&plat=1&web_location=1315875&next=${next}&ps=${ps}`, await getVerifyString())
+        let params = addVerifyInfo(`oid=${videoAid}&type=1&mode=2&plat=1&web_location=1315875&next=${next}&ps=${ps}`, await getVerifyString())
         const res = await axios.request({
             url: `${this.host}/x/v2/reply/wbi/main?${params}`,
             headers: this.getHeaders()
