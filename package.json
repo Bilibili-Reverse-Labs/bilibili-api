@@ -1,6 +1,6 @@
 {
   "name": "qxr-bilibili-api",
-  "version": "1.0.25",
+  "version": "1.0.26",
   "description": "",
   "main": "index.js",
   "repository": "https://github.com/Bilibili-Reverse-Labs/bilibili-api",
