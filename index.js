@@ -289,12 +289,12 @@ class BilibiliApi {
         replies = _.concat(replies, data.data.top_replies || [])
 
         let isEnd = data.data.cursor.is_end
-        let next = 2;
+        let next = 30;
         while (!isEnd) {
             const data = await this.getVideoComments(videoAid, next)
             replies = _.concat(replies, data.data.replies)
             isEnd = data.data.cursor.is_end
-            next++
+            next += 30
         }
 
         return replies
