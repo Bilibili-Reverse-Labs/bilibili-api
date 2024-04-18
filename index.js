@@ -285,26 +285,22 @@ class BilibiliApi {
      */
     async getVideoAllComments(videoAid) {
         let data = await this.getVideoComments(videoAid, 0)
-        // console.log(data)
         let replies = data.data.replies
-        // console.log(data.data)
         replies = _.concat(replies, data.data.top_replies || [])
-        console.log('---', data.data.replies.length,data.data.cursor.prev, data.data.cursor.next, data.data.cursor.all_count)
+        // console.log('---', data.data.replies.length,data.data.cursor.prev, data.data.cursor.next, data.data.cursor.all_count, data.data.cursor.is_end, data.data.cursor.is_begin)
         
         let isEnd = data.data.cursor.is_end
-        // let next = data.data.cursor.prev;
-        let next = 30;
-        let page = Math.ceil(data.data.cursor.all_count / 30)
-        console.log(page, 'page')
-        while (next < data.data.cursor.all_count) {
-            const data = await this.getVideoComments(videoAid, next, 30)
+        let next = data.data.cursor.next;
+        while (!isEnd) {
+            const data = await this.getVideoComments(videoAid, next)
             replies = _.concat(replies, data.data.replies)
-                console.log(next, data.data.replies.length,data.data.cursor.prev, data.data.cursor.next)
+            // console.log(next, data.data.replies.length,data.data.cursor.prev, data.data.cursor.next, data.data.cursor.is_end, data.data.cursor.is_begin)
             isEnd = data.data.cursor.is_end
-            // next = data.data.cursor.prev
-            next += 30
+            next = data.data.cursor.next
+            // console.log(data.data.replies[0].content.message,)
         }
 
+        console.log('this is replies', replies.length)
         return replies
     }
 
@@ -316,10 +312,12 @@ class BilibiliApi {
      * @returns 
      */
     async getVideoComments(videoAid, cursor) {
-
-        const pagination_str =  `{"offset":"{"type":3,"direction":1,"Data":{"cursor":${cursor}}}"}`
-        let params = addVerifyInfo(`oid=${videoAid}&type=1&mode=2&plat=1&web_location=1315875&pagination_str=${pagination_str}`, await getVerifyString())
-        console.log(params)
+        let params = addVerifyInfo(`oid=${videoAid}&type=1&mode=2&plat=1&web_location=1315875`, await getVerifyString())
+        if (cursor) {
+            const page = {type: 3,direction: 1,Data: {cursor}}
+            let page_str = encodeURIComponent(JSON.stringify({ offset: JSON.stringify(page) }))
+            params = addVerifyInfo(`oid=${videoAid}&type=1&mode=2&plat=1&web_location=1315875&pagination_str=${page_str}&plat=1`, await getVerifyString())
+        }
         const res = await axios.request({
             url: `${this.host}/x/v2/reply/wbi/main?${params}`,
             headers: this.getHeaders()
@@ -328,7 +326,6 @@ class BilibiliApi {
             console.log('获取视频评论失败:', _.get(res, 'data.code'), _.get(res, 'data.message'))
             throw new Error('获取视频评论失败')
         }
-        // console.log(res.data.data.replies[0], 'res.data')
         return res.data
     }
 
