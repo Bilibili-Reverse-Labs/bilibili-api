@@ -322,6 +322,7 @@ class BilibiliApi {
             url: `${this.host}/x/v2/reply/wbi/main?${params}`,
             headers: this.getHeaders()
         })
+
         if (!res || !res.data || res.data.code != 0) {
             console.log('获取视频评论失败:', _.get(res, 'data.code'), _.get(res, 'data.message'))
             throw new Error('获取视频评论失败')
@@ -871,6 +872,27 @@ class BilibiliApi {
             writer.on('error', reject)
         })
     }
+
+
+    /**
+     * 综合搜索（web端)
+     * @param {*} keyword 
+     * @returns 
+     */
+    async searchAll(keyword) {
+        const params = `keyword=${keyword}`
+        const res = await axios.request({
+            url: `${this.host}/x/web-interface/wbi/search/all/v2?${params}`,
+            headers: this.getHeaders()
+        })
+
+        if (!res || !res.data || res.data.code != 0) {
+            console.log('综合搜索失败:', _.get(res, 'data.code'), _.get(res, 'data.message'))
+            throw new Error('综合搜索失败')
+        }
+        return res.data.data.result
+    }
+
 }
 
 module.exports = BilibiliApi

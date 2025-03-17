@@ -125,4 +125,9 @@ describe('', function () {
         let res = await api.getAllFollows(1462401621)
         expect(res.length).to.be.not.equal(0)
     })
+
+    it('Success # searchAll', async function () {
+        let res = await api.searchAll("霓虹甜心")
+        expect(res.length).to.be.not.equal(0)
+    })
 })
